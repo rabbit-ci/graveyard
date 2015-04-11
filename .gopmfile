@@ -1,2 +1,9 @@
 [target]
 path = github.com/rabbit-ci/linux-worker
+
+[deps]
+github.com/benmanns/goworker = 
+
+[res]
+include = 
+
