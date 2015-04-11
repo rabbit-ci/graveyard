@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/benmanns/goworker"
-	"github.com/parnurzeal/gorequest"
+	"bytes"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"time"
@@ -28,13 +30,22 @@ func configExtractor(queue string, args ...interface{}) error {
 		return err
 	}
 
-	fmt.Printf("Finished processing job. Args: %v\n", args)
+	url := "http://localhost:4000/config_extraction"
+	var jsonStr = []byte(string(out))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "text/plain")
+	client := &http.Client{}
+	resp, err := client.Do(req)
 
-	request := gorequest.New()
-	resp, body, _ := request.Post("http://localhost:4000/config_extraction").
-		Send(string(out)).End()
+	if err != nil {
+		panic(err)
+	}
+
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
 
 	fmt.Println(resp, body)
+	fmt.Printf("Finished processing job. Args: %v\n", args)
 	return nil
 }
 
