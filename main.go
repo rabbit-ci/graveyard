@@ -3,21 +3,48 @@ package main
 import (
 	"fmt"
 	"github.com/benmanns/goworker"
+	"github.com/parnurzeal/gorequest"
+	"os"
 	"os/exec"
+	"time"
 )
 
-func myFunc(queue string, args ...interface{}) error {
-	out, err := exec.Command("worker", "extract-file",
-		"git@github.com:hunterboerner/rabbitci-test-repo.git",
-		"ebd9c8282f992e009e04dcbf6c1e7df07f554c48", "--file=.rabbitci.json").Output()
-	fmt.Println(err)
-	fmt.Println(string(out))
-	fmt.Printf("From %s, %v\n", queue, args)
+func configExtractor(queue string, args ...interface{}) error {
+	defer timeTrack(time.Now(), "configExtractor")
+	fmt.Printf("Processing job from %s with args: %v\n", queue, args)
+	command := exec.Command("worker", "extract-file",
+		args[0].(string),
+		args[1].(string))
+
+	command.Env = os.Environ()
+	command.Env = append(command.Env, "RUST_BACKTRACE=1")
+
+	out, err := command.CombinedOutput()
+
+	if err != nil {
+		// TODO: We need to tell the server that we encountered an error and give it the backtrace.
+		fmt.Println(string(out))
+		fmt.Println("File extraction errored!")
+		return nil
+	}
+
+	fmt.Printf("Finished processing job. Args: %v\n", args)
+
+	request := gorequest.New()
+	resp, body, _ := request.Post("http://localhost:4000/config_extraction").
+		Send(string(out)).End()
+
+	fmt.Println(resp, body)
 	return nil
 }
 
+func timeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	fmt.Printf("%s took %s", name, elapsed)
+}
+
 func init() {
-	goworker.Register("MyClass", myFunc)
+	goworker.Register("ConfigExtractor", configExtractor)
 }
 
 func main() {
