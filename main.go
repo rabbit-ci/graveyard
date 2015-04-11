@@ -25,7 +25,7 @@ func configExtractor(queue string, args ...interface{}) error {
 		// TODO: We need to tell the server that we encountered an error and give it the backtrace.
 		fmt.Println(string(out))
 		fmt.Println("File extraction errored!")
-		return nil
+		return err
 	}
 
 	fmt.Printf("Finished processing job. Args: %v\n", args)
