@@ -30,7 +30,7 @@ func configExtractor(queue string, args ...interface{}) error {
 		return err
 	}
 
-	url := "http://localhost:4000/config_extraction"
+	url := "http://localhost:4000/config_extraction" // TODO: This needs to be configurable
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(out))
 	req.Header.Set("Content-Type", "text/plain")
 	client := &http.Client{}
