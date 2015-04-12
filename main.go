@@ -13,10 +13,14 @@ import (
 
 func configExtractor(queue string, args ...interface{}) error {
 	defer timeTrack(time.Now(), "configExtractor")
+
+	repo := args[0].(string)
+	commit := args[1].(string)
+	branch := args[2].(string)
+
 	fmt.Printf("Processing job from %s with args: %v\n", queue, args)
 	command := exec.Command("worker", "extract-file",
-		args[0].(string),
-		args[1].(string))
+		repo, commit)
 
 	command.Env = os.Environ()
 	command.Env = append(command.Env, "RUST_BACKTRACE=1")
@@ -32,6 +36,13 @@ func configExtractor(queue string, args ...interface{}) error {
 
 	url := "http://localhost:4000/config_extraction" // TODO: This needs to be configurable
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(out))
+
+	values := req.URL.Query()
+	values.Add("commit", commit)
+	values.Add("branch", branch)
+	values.Add("repo", repo)
+	req.URL.RawQuery = values.Encode()
+
 	req.Header.Set("Content-Type", "text/plain")
 	client := &http.Client{}
 	resp, err := client.Do(req)
