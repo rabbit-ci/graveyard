@@ -31,8 +31,7 @@ func configExtractor(queue string, args ...interface{}) error {
 	}
 
 	url := "http://localhost:4000/config_extraction"
-	var jsonStr = out
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(out))
 	req.Header.Set("Content-Type", "text/plain")
 	client := &http.Client{}
 	resp, err := client.Do(req)
