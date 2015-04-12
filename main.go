@@ -31,7 +31,7 @@ func configExtractor(queue string, args ...interface{}) error {
 	}
 
 	url := "http://localhost:4000/config_extraction"
-	var jsonStr = []byte(string(out))
+	var jsonStr = out
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "text/plain")
 	client := &http.Client{}
@@ -44,7 +44,7 @@ func configExtractor(queue string, args ...interface{}) error {
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	fmt.Println(resp, body)
+	fmt.Println(string(body))
 	fmt.Printf("Finished processing job. Args: %v\n", args)
 	return nil
 }
