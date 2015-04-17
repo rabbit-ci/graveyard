@@ -7,6 +7,7 @@ import (
 
 func init() {
 	goworker.Register("ConfigExtractor", configExtractor)
+	goworker.Register("BuildRunner", buildRunner)
 }
 
 func main() {
