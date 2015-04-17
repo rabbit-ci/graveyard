@@ -58,7 +58,3 @@ func configExtractor(queue string, args ...interface{}) error {
 	return nil
 }
 
-func timeTrack(start time.Time, name string) {
-	elapsed := time.Since(start)
-	fmt.Printf("%s took %s", name, elapsed)
-}
