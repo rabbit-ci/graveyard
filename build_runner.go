@@ -52,12 +52,14 @@ func buildRunner(queue string, args ...interface{}) error {
 	}
 
 	var buffer bytes.Buffer
-	for var_name, var_value := range configJson["ENV"].(map[string]interface{}) {
-		buffer.WriteString(fmt.Sprintf("export %v=\"%v\"\n", var_name, var_value))
+	for key, value := range configJson["ENV"].(map[string]interface{}) {
+		buffer.WriteString(fmt.Sprintf("export %v=\"%v\"\n", key,
+			value))
 	}
 
 	for _, cmd := range configJson["commands"].([]interface{}) {
-		buffer.WriteString(fmt.Sprintf("echo '=== Running command: %v'\n", cmd.(string)))
+		buffer.WriteString(fmt.Sprintf("echo '=== Running command: %v'\n",
+			cmd.(string)))
 		buffer.WriteString(fmt.Sprintf("%v\n", cmd.(string)))
 	}
 
