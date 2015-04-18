@@ -1,4 +1,4 @@
-package worker
+package main
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ func init() {
 
 func main() {
 	if err := goworker.Work(); err != nil {
+		// This doesn't appear to be doing anything
 		fmt.Println("Error: ", err)
 	}
 }

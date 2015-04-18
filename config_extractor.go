@@ -1,21 +1,29 @@
-package worker
+package main
 
 import (
-	"fmt"
-	"time"
-	"os/exec"
-	"os"
-	"net/http"
 	"bytes"
+	"fmt"
 	"io/ioutil"
+	"net/http"
+	"os"
+	"os/exec"
+	"time"
+	"encoding/json"
 )
 
 func configExtractor(queue string, args ...interface{}) error {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in configExtractor", r)
+		}
+	}()
+
 	defer timeTrack(time.Now(), "configExtractor")
 
 	repo := args[0].(string)
 	commit := args[1].(string)
 	branch := args[2].(string)
+	buildNumber := string(args[3].(json.Number))
 
 	fmt.Printf("Processing job from %s with args: %v\n", queue, args)
 	command := exec.Command("worker", "extract-file",
@@ -40,6 +48,7 @@ func configExtractor(queue string, args ...interface{}) error {
 	values.Add("commit", commit)
 	values.Add("branch", branch)
 	values.Add("repo", repo)
+	values.Add("build_number", buildNumber)
 	req.URL.RawQuery = values.Encode()
 
 	req.Header.Set("Content-Type", "text/plain")
@@ -57,4 +66,3 @@ func configExtractor(queue string, args ...interface{}) error {
 	fmt.Printf("Finished processing job. Args: %v\n", args)
 	return nil
 }
-

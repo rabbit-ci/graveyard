@@ -1,4 +1,4 @@
-package worker
+package main
 
 import (
 	"time"
@@ -7,5 +7,5 @@ import (
 
 func timeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
-	fmt.Printf("%s took %s", name, elapsed)
+	fmt.Printf("%s took %s\n", name, elapsed)
 }
