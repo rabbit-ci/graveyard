@@ -7,12 +7,11 @@ import (
 
 func TestRunCommand(t *testing.T) {
 	cl := runCommand("sh", "-c", "echo 'wut'; sleep 2; echo 'hey'; echo 'wat'; sleep 2; echo 'finish'")
-	pipeReader := cl.buffer
 	buffer := make([]byte, 1024)
 	for !cl.finished {
-		n, err := pipeReader.Read(buffer)
+		n, err := cl.pipeReader.Read(buffer)
 		if err != nil {
-			pipeReader.Close()
+			cl.pipeReader.Close()
 			break
 		}
 

@@ -5,12 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/antonholmquist/jason"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
 	"time"
-	"github.com/antonholmquist/jason"
 )
 
 func buildRunner(queue string, args ...interface{}) error {
@@ -48,13 +47,8 @@ func buildRunner(queue string, args ...interface{}) error {
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	// var configJson map[string]interface{}
-	// if err := json.Unmarshal(body, &configJson); err != nil {
-	// 	return err
-	// }
-
 	configJson, err := jason.NewObjectFromBytes(body)
-	
+
 	var buffer bytes.Buffer
 
 	index := 0
@@ -94,8 +88,31 @@ func buildRunner(queue string, args ...interface{}) error {
 		return err
 	}
 
-	out, err := exec.Command("sh", "-c", buffer.String()).Output()
-	fmt.Println(string(out))
+	cl := runCommand("sh", "-c", buffer.String())
+
+	buffer2 := make([]byte, 1024)
+	for !cl.finished {
+		n, err := cl.pipeReader.Read(buffer2)
+		if err != nil {
+			cl.pipeReader.Close()
+			break
+		}
+
+		data := buffer2[0:n]
+
+		url := fmt.Sprintf("%v%v/projects/%v/branches/%v/builds/%v/log",
+			protocol, authority, projectName, branchName, buildNumber)
+		req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(data))
+		values := req.URL.Query()
+		values.Add("script", scriptName)
+		req.URL.RawQuery = values.Encode()
+		req.Header.Set("Content-Type", "text/plain")
+		client.Do(req)
+
+		for i := 0; i < n; i++ {
+			buffer2[i] = 0
+		}
+	}
 
 	return nil
 }

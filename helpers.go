@@ -15,8 +15,8 @@ func timeTrack(start time.Time, name string) {
 }
 
 type CommandLog struct {
-	buffer   *io.PipeReader
-	finished bool
+	pipeReader *io.PipeReader
+	finished   bool
 }
 
 func runCommand(name string, arg ...string) *CommandLog {
@@ -33,7 +33,7 @@ func runCommand(name string, arg ...string) *CommandLog {
 	// Reset any error we recorded
 	logStreamerErr.FlushRecord()
 
-	cl := CommandLog{buffer: pipeReader, finished: false}
+	cl := CommandLog{pipeReader: pipeReader, finished: false}
 	go func() {
 		err := cmd.Start()
 		// Failed to spawn?
