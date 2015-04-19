@@ -20,15 +20,10 @@ type CommandLog struct {
 }
 
 func runCommand(name string, arg ...string) *CommandLog {
-	// var b bytes.Buffer
 	pipeReader, pipeWriter := io.Pipe()
-	// writer := bufio.NewWriter(&b)
 	logger := log.New(pipeWriter, "--> ", log.Ldate|log.Ltime)
 
-	// Setup a streamer that we'll pipe cmd.Stdout to
 	logStreamerOut := logstreamer.NewLogstreamer(logger, "stdout", false)
-	// Setup a streamer that we'll pipe cmd.Stderr to.
-	// We want to record/buffer anything that's written to this (3rd argument true)
 	logStreamerErr := logstreamer.NewLogstreamer(logger, "stderr", true)
 
 	cmd := exec.Command(name, arg...)
@@ -45,6 +40,7 @@ func runCommand(name string, arg ...string) *CommandLog {
 		if err != nil {
 			logger.Printf("ERROR could not spawn command. %s \n", err.Error())
 		}
+
 		errf := cmd.Wait()
 		if errf != nil {
 			logger.Printf("Someting went wrong. %s \n", err.Error())
