@@ -13,4 +13,4 @@ binary in your PATH.
 - Make sure redis is installed and running.
 - Clone this repo.
 - Run `gopm get` and `gopm build` in the folder you cloned to.
-- Start it with: `./output --queues=workers --interval=1 --concurrency=2`
+- Start it with: `./output --queues=workers --interval=1 --concurrency=2 --use-number=true`
