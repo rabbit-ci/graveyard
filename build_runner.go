@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/antonholmquist/jason"
-	"gopkg.in/libgit2/git2go.v22"
 	"io/ioutil"
 	"net/http"
 	"os"
