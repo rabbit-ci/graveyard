@@ -12,6 +12,16 @@ import (
 	"time"
 )
 
+const (
+	protocol  = "http://"
+	authority = "localhost:4000"
+	rootUrl   = protocol + authority
+)
+
+var (
+	client = &http.Client{}
+)
+
 func buildRunner(queue string, args ...interface{}) error {
 	defer func() {
 		if r := recover(); r != nil {
@@ -27,12 +37,9 @@ func buildRunner(queue string, args ...interface{}) error {
 	buildNumber := string(args[2].(json.Number))
 	scriptName := args[3].(string)
 
-	protocol := "http://"
-	authority := "localhost:4000"
-	url := fmt.Sprintf("%v%v/projects/%v/branches/%v/builds/%v/config",
-		protocol, authority, projectName, branchName, buildNumber)
+	url := fmt.Sprintf("%v/projects/%v/branches/%v/builds/%v/config",
+		rootUrl, projectName, branchName, buildNumber)
 	req, _ := http.NewRequest("GET", url, nil)
-	client := &http.Client{}
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -66,9 +73,19 @@ func buildRunner(queue string, args ...interface{}) error {
 		value_str, _ := value.String()
 		buffer.WriteString(fmt.Sprintf("export %v=\"%v\"\n", key,
 			value_str))
+		buffer.WriteString(fmt.Sprintf("echo \"Setting %v to %v\"\n", key,
+			value_str))
 	}
 
 	commands, _ := scriptMap[index].GetStringArray("commands")
+	buffer.WriteString(`
+GIT_OUTPUT=$(git clone $RABBIT_CI_REPO --depth=30 2>&1)
+if [[ $? -eq 0 ]]; then
+    echo $GIT_OUTPUT
+else
+    echo $GIT_OUTPUT 1>&2
+fi
+`)
 	for _, cmd := range commands {
 		buffer.WriteString(fmt.Sprintf("echo '=== Running command: %v'\n",
 			cmd))
@@ -100,14 +117,8 @@ func buildRunner(queue string, args ...interface{}) error {
 
 		data := buffer2[0:n]
 
-		url := fmt.Sprintf("%v%v/projects/%v/branches/%v/builds/%v/log",
-			protocol, authority, projectName, branchName, buildNumber)
-		req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(data))
-		values := req.URL.Query()
-		values.Add("script", scriptName)
-		req.URL.RawQuery = values.Encode()
-		req.Header.Set("Content-Type", "text/plain")
-		client.Do(req)
+		sendLog(data, projectName, branchName,
+			buildNumber, scriptName)
 
 		for i := 0; i < n; i++ {
 			buffer2[i] = 0
@@ -115,4 +126,16 @@ func buildRunner(queue string, args ...interface{}) error {
 	}
 
 	return nil
+}
+
+func sendLog(data []byte, projectName, branchName, buildNumber,
+	scriptName string) {
+	url := fmt.Sprintf("%v%v/projects/%v/branches/%v/builds/%v/log",
+		protocol, authority, projectName, branchName, buildNumber)
+	req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(data))
+	values := req.URL.Query()
+	values.Add("script", scriptName)
+	req.URL.RawQuery = values.Encode()
+	req.Header.Set("Content-Type", "text/plain")
+	client.Do(req)
 }
