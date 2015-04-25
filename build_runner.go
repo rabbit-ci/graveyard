@@ -79,7 +79,7 @@ func buildRunner(queue string, args ...interface{}) error {
 
 	commands, _ := scriptMap[index].GetStringArray("commands")
 	buffer.WriteString(`
-GIT_OUTPUT=$(git clone $RABBIT_CI_REPO --depth=30 2>&1)
+GIT_OUTPUT=$(git clone $RABBIT_CI_REPO . --depth=30 2>&1)
 if [[ $? -eq 0 ]]; then
     echo $GIT_OUTPUT
 else
