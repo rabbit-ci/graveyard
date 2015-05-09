@@ -132,9 +132,10 @@ func sendLog(data []byte, projectName, branchName, buildNumber,
 	scriptName string) {
 	url := fmt.Sprintf("%v%v/projects/%v/branches/%v/builds/%v/log",
 		protocol, authority, projectName, branchName, buildNumber)
-	req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(data))
+	req, _ := http.NewRequest("PUT", url, nil)
 	values := req.URL.Query()
 	values.Add("script", scriptName)
+	values.Add("log_string", string(data))
 	req.URL.RawQuery = values.Encode()
 	req.Header.Set("Content-Type", "text/plain")
 	client.Do(req)
