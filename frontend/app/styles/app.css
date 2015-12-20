@@ -1,0 +1,15 @@
+a.active {
+  font-weight: bold;
+}
+
+body {
+  font-family: "Helvetica";
+}
+
+table {
+  border-collapse: collapse;
+}
+
+table, th, td {
+   border: 1px solid black;
+}

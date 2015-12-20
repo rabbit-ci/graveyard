@@ -1,0 +1,12 @@
+<h2>This is the index template</h2>
+
+<table>
+  <tr>
+    <th>Name</th>
+  </tr>
+  {{#each project in model}}
+    <tr>
+      <td>{{#link-to 'projects.show' project}}{{project.name}}{{/link-to}}</td>
+    </tr>
+  {{/each}}
+</table>

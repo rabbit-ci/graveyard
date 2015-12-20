@@ -1,0 +1,10 @@
+<p>
+  Name: {{name}}
+  Repo: {{repo}}
+</p>
+
+{{#each branch in branches}}
+  {{branch.name}}
+{{/each}}
+
+{{outlet}}
